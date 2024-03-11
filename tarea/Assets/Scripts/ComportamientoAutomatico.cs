@@ -15,19 +15,17 @@ public class ComportamientoAutomatico : MonoBehaviour {
     private Sensores sensor;
 	private Actuadores actuador;
 	private Mapa mapa;
-    public Vertice anterior, destino;
-    public bool fp = false;
+    private Vertice verticeActual, verticeDestino;
+    public bool fp = true, look;
 
 
     void Start(){
-        SetState(State.MAPEO);
+        SetState(State.DFS);
         sensor = GetComponent<Sensores>();
 		actuador = GetComponent<Actuadores>();
         mapa = GetComponent<Mapa>();
         mapa.ColocarNodo(0);
-        mapa.popStack(out anterior);
-        mapa.setPreV(anterior);
-
+        mapa.popStack(out verticeActual);
     }
 
 
@@ -36,26 +34,54 @@ public class ComportamientoAutomatico : MonoBehaviour {
             case State.MAPEO:
             UpdateMAPEO();
             break;
+            case State.DFS:
+            UpdateDFS();
+            break;
         }
     }
 
     // Funciones de actualizacion especificas para cada estado
+    /**
+     * PASOS PARA EL DFS
+     * 1.- Colocar un vértice (meterlo a la pila 'ColocarNodo' ya lo mete a la pila
+     * 2.- Sacar de la pila, e intentar poner mas vértices
+     * 3.- Hacer backtrack al siguiente vértice en la pila
+     * 4.- Repetir hasta vaciar la pila
+     */
     void UpdateMAPEO() {
-        actuador.Adelante();
-        if(!sensor.FrenteLibre()){
-            actuador.GirarIzquierda();
+        if (fp) {
+            mapa.popStack(out verticeActual);
+            mapa.setPreV(verticeActual);   //Asignar a mapa el vértice nuevo al que nos vamos a mover, para crear las adyacencias necesarias.
+            fp = false;
         }
-    }
+        if (Vector3.Distance(sensor.Ubicacion(), verticeActual.posicion) >= 0.04f) {
+            if (!look) {
+                transform.LookAt(verticeActual.posicion);
+                look = true;
+            }
+            actuador.Adelante();
+        } 
+        
+        else {
+            look = false;
+            fp = true;
+            SetState(State.DFS);
+        }
+    } 
 
-    void UpdateDFS(){
-        if(sensor.FrenteLibre()){
-            mapa.ColocarNodo(2);
+    // Funciones de actualizacion especificas para cada estado
+    void UpdateDFS() {
+        if (!sensor.FrenteLibre()) {
+            actuador.Detener();
         }
-        if(sensor.IzquierdaLibre()){
+        if (sensor.IzquierdaLibre()) {
             mapa.ColocarNodo(1);
         }
-        if(sensor.DerechaLibre()){
+        if (sensor.DerechaLibre()) {
             mapa.ColocarNodo(3);
+        }
+        if (sensor.FrenteLibre()) {
+            mapa.ColocarNodo(2);
         }
         SetState(State.MAPEO);
     }
