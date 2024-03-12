@@ -15,8 +15,8 @@ public class ComportamientoAutomatico : MonoBehaviour {
     private Sensores sensor;
 	private Actuadores actuador;
 	private Mapa mapa;
-    public Vertice anterior, destino;
-    public bool fp = false;
+    public Vertice verticeActual, VerticeDestino;
+    public bool fp = false, look;
 
 
     void Start(){
@@ -25,8 +25,8 @@ public class ComportamientoAutomatico : MonoBehaviour {
 		actuador = GetComponent<Actuadores>();
         mapa = GetComponent<Mapa>();
         mapa.ColocarNodo(0);
-        mapa.popStack(out anterior);
-        mapa.setPreV(anterior);
+        mapa.popStack(out verticeActual);
+        //mapa.setPreV(anterior);
 
     }
 
@@ -41,21 +41,45 @@ public class ComportamientoAutomatico : MonoBehaviour {
 
     // Funciones de actualizacion especificas para cada estado
     void UpdateMAPEO() {
-        actuador.Adelante();
-        if(!sensor.FrenteLibre()){
-            actuador.GirarIzquierda();
+        if(fp){
+            mapa.popStack(out verticeActual);
+            mapa.setPreV(verticeActual); //asignar a mapa el vertice nuevo al que nos vamos a mover, para crear las adyacencias necesarias.
+            fp = false;
+        }
+
+        if(Vector3.Distance(sensor.Ubicacion(), verticeActual.posicion) >= 0.04f){
+            if(!look){
+                transform.LookAt(verticeActual.posicion);
+                look = true;
+            }
+
+            actuador.Adelante();
+            if(!sensor.FrenteLibre()){
+                actuador.GirarIzquierda();
+                SetState(State.DFS);
+                look = false;
+                fp = true;
+            }
+
+        } else {
+            look = false;
+            fp = true;
+            SetState(State.DFS);
         }
     }
 
     void UpdateDFS(){
-        if(sensor.FrenteLibre()){
-            mapa.ColocarNodo(2);
+        if(!sensor.FrenteLibre()){
+            actuador.Detener();
         }
         if(sensor.IzquierdaLibre()){
             mapa.ColocarNodo(1);
         }
         if(sensor.DerechaLibre()){
             mapa.ColocarNodo(3);
+        }
+        if(sensor.FrenteLibre()){
+            mapa.ColocarNodo(2);
         }
         SetState(State.MAPEO);
     }
