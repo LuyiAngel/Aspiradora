@@ -6,10 +6,10 @@ public class Rotacion : MonoBehaviour {
 
     public bool rot;
 
-    //Hace rota el GameObject al que está asociado en
+    //Hace rota el GameObject al que estï¿½ asociado en
     //un rango 60 grados por frame.
     void Update() {
-        this.transform.Rotate(new Vector3(0.0f, 60.0f, 0.0f));
+        this.transform.Rotate(new Vector3(0.0f, 90.0f, 0.0f));
     }
 
 }

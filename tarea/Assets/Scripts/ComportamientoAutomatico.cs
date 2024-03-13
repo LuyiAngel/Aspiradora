@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class ComportamientoAutomatico : MonoBehaviour {
 
-
-    //Enum para los estados
+    // Enum para los estados
     public enum State {
         MAPEO,
         DFS
@@ -13,101 +12,84 @@ public class ComportamientoAutomatico : MonoBehaviour {
 
     private State currentState;
     private Sensores sensor;
-	private Actuadores actuador;
-	private Mapa mapa;
-    public Vertice verticeActual, VerticeDestino;
-    public bool fp = false, look;
-    
-
+    private Actuadores actuador;
+    private Mapa mapa;
+    public Vertice verticeActual;
+    private bool fp = false, look;
 
     void Start(){
         SetState(State.DFS);
         sensor = GetComponent<Sensores>();
-		actuador = GetComponent<Actuadores>();
+        actuador = GetComponent<Actuadores>();
         mapa = GetComponent<Mapa>();
+        // Iniciar el mapeo colocando un nodo
         mapa.ColocarNodo(0);
         mapa.popStack(out verticeActual);
-
-        //mapa.setPreV(anterior);
-
     }
-
 
     void FixedUpdate() {
         switch (currentState) {
             case State.MAPEO:
-            UpdateMAPEO();
-            break;
+                UpdateMAPEO();
+                break;
             case State.DFS:
-            UpdateDFS();
-            break;
+                UpdateDFS();
+                break;
         }
     }
 
-    // Funciones de actualizacion especificas para cada estado
-    /**
-     * PASOS PARA EL DFS
-     * 1.- Colocar un vértice (meterlo a la pila 'ColocarNodo' ya lo mete a la pila
-     * 2.- Sacar de la pila, e intentar poner mas vértices
-     * 3.- Hacer backtrack al siguiente vértice en la pila
-     * 4.- Repetir hasta vaciar la pila
-     */
+    // Función de actualización para el estado de mapeo
     void UpdateMAPEO() {
         if(fp){
+            // Si ya se alcanzó el vértice actual, obtener el siguiente de la pila
             mapa.popStack(out verticeActual);
-            mapa.setPreV(verticeActual); //asignar a mapa el vertice nuevo al que nos vamos a mover, para crear las adyacencias necesarias.
+            mapa.setPreV(verticeActual); // Asignar a mapa el vertice nuevo al que nos vamos a mover
             fp = false;
         }
 
+        // Avanzar hacia el vértice actual
         if(Vector3.Distance(sensor.Ubicacion(), verticeActual.posicion) >= 0.04f){
             if(!look){
+                // Girar para enfrentar el vértice actual
                 transform.LookAt(verticeActual.posicion);
                 look = true;
             }
-
+            // Avanzar hacia el vértice actual
             actuador.Adelante();
+            // Si hay una pared frente a la aspiradora, cambiar al estado DFS
             if(!sensor.FrenteLibre()){
                 actuador.GirarIzquierda();
                 SetState(State.DFS);
                 look = false;
                 fp = true;
             }
-
         } else {
+            // Si se alcanza el vértice actual, cambiar al estado DFS
             look = false;
             fp = true;
             SetState(State.DFS);
         }
-        if (Vector3.Distance(sensor.Ubicacion(), verticeActual.posicion) >= 0.04f) {
-            if (!look) {
-                transform.LookAt(verticeActual.posicion);
-                look = true;
-            }
-            actuador.Adelante();
-        } 
-        
-        else {
-            look = false;
-            fp = true;
-            SetState(State.DFS);
-        }
-    } 
+    }
 
+    // Función de actualización para el estado DFS
     void UpdateDFS(){
+        // Detener la aspiradora si hay una pared frente a ella
         if(!sensor.FrenteLibre()){
-
             actuador.Detener();
         }
+        // Colocar un nodo en la dirección izquierda si está libre
         if (sensor.IzquierdaLibre()) {
             mapa.ColocarNodo(1);
         }
+        // Colocar un nodo en la dirección derecha si está libre
         if (sensor.DerechaLibre()) {
             mapa.ColocarNodo(3);
         }
+        // Colocar un nodo en la dirección frontal si está libre
         if(sensor.FrenteLibre()){
-        
             mapa.ColocarNodo(2);
         }
+        // Cambiar al estado de mapeo
         SetState(State.MAPEO);
     }
 
@@ -115,5 +97,4 @@ public class ComportamientoAutomatico : MonoBehaviour {
     void SetState(State newState) {
         currentState = newState;
     }
-
 }

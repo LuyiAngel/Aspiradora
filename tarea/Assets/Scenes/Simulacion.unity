@@ -2151,7 +2151,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1902013074}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: affd3433e96b381b19936d68d49dcaa3, type: 3}
   m_Name: 
@@ -2225,8 +2225,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fa4cfdf36c9d98cbbcba883009c6196, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fp: 0
-  look: 0
 --- !u!114 &1902013081
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2245,7 +2243,7 @@ MonoBehaviour:
   cont: -1
   tam: 0
   canSetNode: 1
-  granularidad: 2.5
+  granularidad: 3.8
 --- !u!1 &1958427751
 GameObject:
   m_ObjectHideFlags: 0
