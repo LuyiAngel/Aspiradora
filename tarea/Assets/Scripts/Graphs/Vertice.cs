@@ -9,7 +9,9 @@ public class Vertice{
     public Vertice padre;
     public Vertice camino;
     public Vector3 posicion;
-    public int f,g,h;
+    public float f,g,h; //para que funcione A*
+    public bool visitado;
+
 
     public Vertice(int newId, Vector3 newPos) {
         this.id = newId;
@@ -21,7 +23,6 @@ public class Vertice{
     }
 
     public void AgregarVecino(Vertice newVertice) {
-        //Completar
         if(!vecinos.Contains(newVertice)){
             vecinos.Add(newVertice);
         }
