@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ComportamientoAutomatico : MonoBehaviour {
@@ -12,10 +14,12 @@ public class ComportamientoAutomatico : MonoBehaviour {
 
     private State currentState;
     private Sensores sensor;
-    private Actuadores actuador;
-    private Mapa mapa;
-    public Vertice verticeActual;
-    private bool fp = false, look;
+	private Actuadores actuador;
+	private Mapa mapa;
+    private Vertice verticeActual, verticeDestino;
+    public bool fp = true, look;
+    public Vector3 destino;
+
 
     void Start(){
         SetState(State.DFS);
@@ -25,6 +29,8 @@ public class ComportamientoAutomatico : MonoBehaviour {
         // Iniciar el mapeo colocando un nodo
         mapa.ColocarNodo(0);
         mapa.popStack(out verticeActual);
+        destino = new Vector3(0.0f, 0.0f, 0.0f);
+        //mapa.setPreV(anterior);
     }
 
     void FixedUpdate() {
@@ -40,34 +46,41 @@ public class ComportamientoAutomatico : MonoBehaviour {
 
     // Función de actualización para el estado de mapeo
     void UpdateMAPEO() {
-        if(fp){
-            // Si ya se alcanzó el vértice actual, obtener el siguiente de la pila
-            mapa.popStack(out verticeActual);
-            mapa.setPreV(verticeActual); // Asignar a mapa el vertice nuevo al que nos vamos a mover
+        if (fp){
+            if (!mapa.popStack(out verticeDestino)) {
+                SetState(State.DFS);
+                return;
+            }
+            destino = verticeDestino.posicion;
+            mapa.setPreV(verticeDestino);
             fp = false;
         }
-
-        // Avanzar hacia el vértice actual
-        if(Vector3.Distance(sensor.Ubicacion(), verticeActual.posicion) >= 0.04f){
-            if(!look){
-                // Girar para enfrentar el vértice actual
-                transform.LookAt(verticeActual.posicion);
+        if (verticeDestino.padre.id == verticeActual.id) {
+            if (!look) {
+                transform.LookAt(destino);
                 look = true;
             }
-            // Avanzar hacia el vértice actual
-            actuador.Adelante();
-            // Si hay una pared frente a la aspiradora, cambiar al estado DFS
-            if(!sensor.FrenteLibre()){
-                actuador.GirarIzquierda();
-                SetState(State.DFS);
-                look = false;
+            if (Vector3.Distance(sensor.Ubicacion(), destino) >= 0.04f) {
+                actuador.Adelante();
+            } else {
+                verticeActual = verticeDestino;
+
                 fp = true;
+                look = false;
+                SetState(State.DFS);
             }
         } else {
-            // Si se alcanza el vértice actual, cambiar al estado DFS
-            look = false;
-            fp = true;
-            SetState(State.DFS);
+            Debug.Log(Vector3.Distance(sensor.Ubicacion(), verticeActual.padre.posicion) >= 0.04f);
+            if (Vector3.Distance(sensor.Ubicacion(), verticeActual.padre.posicion) >= 0.04f){
+                if (!look) {
+                    transform.LookAt(verticeActual.padre.posicion);
+                    look = true;
+                }
+                actuador.Adelante();
+            } else {
+                verticeActual = verticeActual.padre;
+                look = false;
+            }
         }
     }
 

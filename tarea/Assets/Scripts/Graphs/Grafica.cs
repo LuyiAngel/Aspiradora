@@ -22,11 +22,13 @@ public class Grafica{
 
 	//Auxiliar que reconstruye el camino de A*
 	public void reconstruirCamino(Vertice inicio, Vertice final) {
+		camino.Clear();
+		camino.Add(final);
 		//Completar
 	}
 
 	float distancia(Vertice a, Vertice b) {
-		//Completar
+		//Completar distancia entre dos vectores utilizando Vector3.distance()
 		return 0;
 	}
 
