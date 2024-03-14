@@ -89,19 +89,34 @@ public class ComportamientoAutomatico : MonoBehaviour {
                 look = false;
             }
         }
-    }
+        if (Vector3.Distance(sensor.Ubicacion(), verticeActual.posicion) >= 0.04f) {
+            if (!look) {
+                transform.LookAt(verticeActual.posicion);
+                look = true;
+            }
+            actuador.Adelante();
+        } 
+        
+        else {
+            look = false;
+            fp = true;
+            SetState(State.DFS);
+        }
+    } 
 
     void UpdateDFS(){
         if(!sensor.FrenteLibre()){
+
             actuador.Detener();
         }
-        if(sensor.IzquierdaLibre()){
+        if (sensor.IzquierdaLibre()) {
             mapa.ColocarNodo(1);
         }
-        if(sensor.DerechaLibre()){
+        if (sensor.DerechaLibre()) {
             mapa.ColocarNodo(3);
         }
         if(sensor.FrenteLibre()){
+        
             mapa.ColocarNodo(2);
         }
         SetState(State.MAPEO);
